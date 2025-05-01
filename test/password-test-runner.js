@@ -1,8 +1,8 @@
 // === Конфігурація ===
 
 const charSets = {
-  lowercase: { name: 'Малі літери', regex: /[a-z]/ },
-  uppercase: { name: 'Великі літери', regex: /[A-Z]/ },
+  lowercase: { name: 'Малі латинські літери', regex: /[a-z]/ },
+  uppercase: { name: 'Великі латинські літери', regex: /[A-Z]/ },
   digits:    { name: 'Цифри', regex: /\d/ },
   special:   { name: 'Спецсимволи', regex: /[!@#$%^&*()_\-+=\[\]{}|\\:;"'<>,.?/]/ },
 };
