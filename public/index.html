@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Перевірка стійкості пароля</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mocha/10.2.0/mocha.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Перевірка стійкості пароля</h1>
+        
+        <div class="input-group">
+            <label for="password">Введіть пароль:</label>
+            <div style="display: flex;">
+                <input type="password" id="password" placeholder="Введіть ваш пароль">
+                <button class="toggle-btn" id="togglePassword">👁️</button>
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Набори символів для перевірки</th>
+                        <th>Опис</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Набір 1</td>
+                        <td>Латинські маленькі літери (a-z)</td>
+                    </tr>
+                    <tr>
+                        <td>Набір 2</td>
+                        <td>Цифри (0-9)</td>
+                    </tr>
+                    <tr>
+                        <td>Набір 3</td>
+                        <td>Латинські великі літери (A-Z)</td>
+                    </tr>
+                    <tr>
+                        <td>Набір 4</td>
+                        <td>Спеціальні символи (!@#$%^&*_-+)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="input-group">
+            <label>Вимоги до пароля (за варіантом 1):</label>
+            <ul>
+                <li>Мінімальна довжина: 8 символів</li>
+                <li>Мінімальна кількість наборів символів: 2</li>
+                <li>Обов'язкові набори: Латинські маленькі літери, Цифри, Латинські великі літери, Спеціальні символи</li>
+            </ul>
+        </div>
+        
+        <button id="checkPassword">Перевірити пароль</button>
+        
+        <div id="resultContainer" style="display: none;" class="result">
+            <h2>Результат перевірки:</h2>
+            
+            <div class="password-strength-meter">
+                <div id="strengthMeter" class="password-strength-value"></div>
+            </div>
+            
+            <div id="strengthText" style="margin-bottom: 15px; font-weight: bold;"></div>
+            
+            <div id="checkResults">
+                <!-- Результати перевірки будуть додані сюди -->
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script src="../src/password-validator.js"></script>
+</body>
+</html>

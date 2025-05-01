@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Продуктивність валідації паролів</title>
+  <style>
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+    }
+    .test-container {
+      background-color: #f5f5f5;
+      padding: 20px;
+      border-radius: 5px;
+      margin-top: 20px;
+    }
+    .test-title {
+      font-size: 18px;
+      margin-bottom: 15px;
+    }
+    #generate-btn {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    #generate-btn:hover {
+      background-color: #45a049;
+    }
+    #time-display {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    #results-log {
+      margin-top: 10px;
+    }
+    #results-log div {
+      padding: 12px;
+      margin-bottom: 8px;
+      background-color: #e9e9e9;
+      border-radius: 5px;
+      line-height: 1.5;
+    }
+    code {
+      background-color: #f0f0f0;
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-family: monospace;
+      border: 1px solid #ddd;
+      display: inline-block;
+      margin: 2px 0;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .show-password-btn {
+      background-color: #2196F3;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      padding: 3px 8px;
+      font-size: 12px;
+      cursor: pointer;
+      margin-left: 5px;
+    }
+    .show-password-btn:hover {
+      background-color: #0b7dda;
+    }
+    .error {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Продуктивність валідації паролів за довжиною</h1>
+    
+    <div class="test-container">
+      <div class="test-title">Натисніть кнопку для генерації пароля та перевірки часу:</div>
+      <button id="generate-btn">Згенерувати пароль</button>
+      <div id="time-display"></div>
+      
+      <div id="results-container" style="margin-top: 20px;">
+        <h2>Результати тестування:</h2>
+        <div id="results-log"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Підключаємо скрипти -->
+  <!-- Визначаємо заглушки на випадок, якщо основні функції недоступні -->
+  <script src="../src/password-validator.js"></script>
+  <script src="../test/perfomance.test.js"></script>
+  <script>
+    // Заглушки для необхідних функцій та об'єктів
+    if (typeof validatePassword === 'undefined') {
+      console.log('Створюємо заглушку для validatePassword');
+      
+      // Набори символів
+      window.charSets = {
+        lowerCase: { name: 'малі літери', pattern: /[a-z]/ },
+        upperCase: { name: 'великі літери', pattern: /[A-Z]/ },
+        digits: { name: 'цифри', pattern: /[0-9]/ },
+        specialChars: { name: 'спеціальні символи', pattern: /[^a-zA-Z0-9]/ }
+      };
+      
+      // Варіанти налаштувань
+      window.variants = {
+        variant1: {
+          minLength: 8,
+          maxLength: 128,
+          requiredSets: 2,
+          requiredSpecificSets: []
+        }
+      };
+      
+      // Функція валідації пароля
+      window.validatePassword = function(password, variant, charSets) {
+        console.log('Використовується заглушка validatePassword');
+        
+        // Перевірка довжини
+        const lengthCheck = {
+          valid: password.length >= variant.minLength && password.length <= variant.maxLength,
+          message: `Довжина: ${password.length} символів (має бути від ${variant.minLength} до ${variant.maxLength})`
+        };
+        
+        // Перевірка наборів символів
+        const setChecks = [];
+        let usedSets = 0;
+        
+        for (const [key, set] of Object.entries(charSets)) {
+          const isUsed = set.pattern.test(password);
+          if (isUsed) usedSets++;
+          
+          setChecks.push({
+            valid: isUsed,
+            message: `${set.name}: ${isUsed ? 'присутні' : 'відсутні'}`
+          });
+        }
+        
+        // Перевірка кількості використаних наборів
+        const setsUsedCheck = {
+          valid: usedSets >= variant.requiredSets,
+          usedSets: usedSets,
+          message: `Використано ${usedSets} з ${Object.keys(charSets).length} наборів символів (потрібно мінімум ${variant.requiredSets})`
+        };
+        
+        // Визначення стійкості пароля
+        const passwordStrength = {
+          score: Math.min(100, (password.length / 12) * 50 + (usedSets / 4) * 50),
+          level: { 
+            text: usedSets >= 3 ? 'сильний' : usedSets === 2 ? 'середній' : 'слабкий',
+            color: usedSets >= 3 ? 'green' : usedSets === 2 ? 'orange' : 'red'
+          }
+        };
+        
+        return {
+          isValid: lengthCheck.valid && setsUsedCheck.valid,
+          lengthCheck: lengthCheck,
+          setChecks: setChecks,
+          setsUsedCheck: setsUsedCheck,
+          passwordStrength: passwordStrength
+        };
+      };
+    }
+  </script>
+  
+  <script src="performance.js"></script>
+  
+  <!-- Додаємо для відлагодження -->
+  <script>
+    console.log('HTML документ завантажено');
+    window.addEventListener('load', function() {
+      console.log('Усі ресурси завантажено');
+      
+      // Перевіряємо доступність функцій
+      console.log('validatePassword існує:', typeof validatePassword !== 'undefined');
+      console.log('variants існує:', typeof variants !== 'undefined');
+      console.log('charSets існує:', typeof charSets !== 'undefined');
+      
+      // Тестовий виклик функції валідації
+      try {
+        const testResult = validatePassword('password123', variants.variant1, charSets);
+        console.log('Тестовий результат валідації:', testResult);
+      } catch (error) {
+        console.error('Помилка при тестовому виклику validatePassword:', error);
+      }
+    });
+  </script>
+</body>
+</html>
