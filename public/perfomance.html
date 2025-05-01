@@ -94,105 +94,10 @@
     </div>
   </div>
 
-  <!-- Підключаємо скрипти -->
-  <!-- Визначаємо заглушки на випадок, якщо основні функції недоступні -->
+
   <script src="../src/password-validator.js"></script>
   <script src="../test/perfomance.test.js"></script>
-  <script>
-    // Заглушки для необхідних функцій та об'єктів
-    if (typeof validatePassword === 'undefined') {
-      console.log('Створюємо заглушку для validatePassword');
-      
-      // Набори символів
-      window.charSets = {
-        lowerCase: { name: 'малі літери', pattern: /[a-z]/ },
-        upperCase: { name: 'великі літери', pattern: /[A-Z]/ },
-        digits: { name: 'цифри', pattern: /[0-9]/ },
-        specialChars: { name: 'спеціальні символи', pattern: /[^a-zA-Z0-9]/ }
-      };
-      
-      // Варіанти налаштувань
-      window.variants = {
-        variant1: {
-          minLength: 8,
-          maxLength: 128,
-          requiredSets: 2,
-          requiredSpecificSets: []
-        }
-      };
-      
-      // Функція валідації пароля
-      window.validatePassword = function(password, variant, charSets) {
-        console.log('Використовується заглушка validatePassword');
-        
-        // Перевірка довжини
-        const lengthCheck = {
-          valid: password.length >= variant.minLength && password.length <= variant.maxLength,
-          message: `Довжина: ${password.length} символів (має бути від ${variant.minLength} до ${variant.maxLength})`
-        };
-        
-        // Перевірка наборів символів
-        const setChecks = [];
-        let usedSets = 0;
-        
-        for (const [key, set] of Object.entries(charSets)) {
-          const isUsed = set.pattern.test(password);
-          if (isUsed) usedSets++;
-          
-          setChecks.push({
-            valid: isUsed,
-            message: `${set.name}: ${isUsed ? 'присутні' : 'відсутні'}`
-          });
-        }
-        
-        // Перевірка кількості використаних наборів
-        const setsUsedCheck = {
-          valid: usedSets >= variant.requiredSets,
-          usedSets: usedSets,
-          message: `Використано ${usedSets} з ${Object.keys(charSets).length} наборів символів (потрібно мінімум ${variant.requiredSets})`
-        };
-        
-        // Визначення стійкості пароля
-        const passwordStrength = {
-          score: Math.min(100, (password.length / 12) * 50 + (usedSets / 4) * 50),
-          level: { 
-            text: usedSets >= 3 ? 'сильний' : usedSets === 2 ? 'середній' : 'слабкий',
-            color: usedSets >= 3 ? 'green' : usedSets === 2 ? 'orange' : 'red'
-          }
-        };
-        
-        return {
-          isValid: lengthCheck.valid && setsUsedCheck.valid,
-          lengthCheck: lengthCheck,
-          setChecks: setChecks,
-          setsUsedCheck: setsUsedCheck,
-          passwordStrength: passwordStrength
-        };
-      };
-    }
-  </script>
   
-  <script src="performance.js"></script>
   
-  <!-- Додаємо для відлагодження -->
-  <script>
-    console.log('HTML документ завантажено');
-    window.addEventListener('load', function() {
-      console.log('Усі ресурси завантажено');
-      
-      // Перевіряємо доступність функцій
-      console.log('validatePassword існує:', typeof validatePassword !== 'undefined');
-      console.log('variants існує:', typeof variants !== 'undefined');
-      console.log('charSets існує:', typeof charSets !== 'undefined');
-      
-      // Тестовий виклик функції валідації
-      try {
-        const testResult = validatePassword('password123', variants.variant1, charSets);
-        console.log('Тестовий результат валідації:', testResult);
-      } catch (error) {
-        console.error('Помилка при тестовому виклику validatePassword:', error);
-      }
-    });
-  </script>
 </body>
 </html>

@@ -1,118 +1,134 @@
-/**
- * Файл для тестування продуктивності валідації паролів
- */
 document.addEventListener('DOMContentLoaded', function() {
-    // Знаходимо елементи інтерфейсу
+    console.log('Performance script loaded');
+  
     const generateBtn = document.getElementById('generate-btn');
     const timeDisplay = document.getElementById('time-display');
     const resultsLog = document.getElementById('results-log');
     
-    // Перевіряємо, чи знайдені необхідні елементи
-    if (generateBtn && timeDisplay && resultsLog) {
-      console.log('Елементи інтерфейсу знайдено успішно');
+    // Перелік довжин паролів для тестування
+    const passwordLengths = [8, 16, 32, 64, 128, 256, 512, 1024];
+    
+    // Генерація випадкового пароля заданої довжини з різними наборами символів
+    function generateRandomPassword(length) {
+      const lowerChars = 'abcdefghijklmnopqrstuvwxyz';
+      const upperChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const digits = '0123456789';
+      const specialChars = '!@#$%^&*()_+-=[]{}|;:,.<>?';
       
-      // Перевіряємо наявність необхідних функцій
-      if (typeof validatePassword === 'undefined' || typeof variants === 'undefined' || typeof charSets === 'undefined') {
-        console.error('Помилка: Не знайдено необхідні функції або об\'єкти для валідації пароля');
-        timeDisplay.textContent = 'Помилка: Необхідні функції не знайдено. Перевірте консоль браузера.';
-        timeDisplay.style.color = 'red';
-        return;
+      // Об'єднуємо всі набори символів
+      const allChars = lowerChars + upperChars + digits + specialChars;
+      
+      // Переконуємося, що пароль міститиме хоча б один символ із кожного набору
+      let password = '';
+      
+      // Додаємо по одному символу з кожного набору
+      password += lowerChars.charAt(Math.floor(Math.random() * lowerChars.length));
+      password += upperChars.charAt(Math.floor(Math.random() * upperChars.length));
+      password += digits.charAt(Math.floor(Math.random() * digits.length));
+      password += specialChars.charAt(Math.floor(Math.random() * specialChars.length));
+      
+      // Заповнюємо решту пароля випадковими символами
+      for (let i = 4; i < length; i++) {
+        password += allChars.charAt(Math.floor(Math.random() * allChars.length));
       }
       
-      // Функція для генерації пароля заданої довжини
-      function generatePassword(length) {
-        // Створюємо пароль з маленьких літер і однієї цифри на кінці
-        return 'a'.repeat(length - 1) + '1';
+      // Перемішуємо символи в паролі
+      return password.split('').sort(() => 0.5 - Math.random()).join('');
+    }
+    
+    // Функція для маскування пароля (показуємо лише початок і кінець)
+    function maskPassword(password) {
+      if (password.length <= 20) {
+        return password;
       }
       
-      // Додає результат до логу
-      function addResultToLog(passwordLength, timeMs) {
-        const resultItem = document.createElement('div');
-        resultItem.innerHTML = `<strong>Довжина пароля:</strong> ${passwordLength} символів | <strong>Час виконання:</strong> ${timeMs.toFixed(3)} мс`;
-        resultsLog.appendChild(resultItem);
+      const visibleChars = 10;
+      return password.substring(0, visibleChars) + '...' + 
+             password.substring(password.length - visibleChars);
+    }
+    
+    // Функція виміру часу виконання валідації пароля
+    function measureValidationTime(password) {
+      // Виконуємо 100 разів для точніших вимірювань при коротких паролях
+      const iterations = 100;
+      const startTime = performance.now();
+      
+      for (let i = 0; i < iterations; i++) {
+        validatePassword(password, variants.variant1, charSets);
       }
       
-      // Налаштування для тестування
-      const simpleValidator = function(password) {
-        // Спрощена функція валідації для випадку, якщо основна недоступна
-        return {
-          isValid: password.length >= 8,
-          lengthCheck: { valid: password.length >= 8, message: 'Довжина: ' + password.length },
-          setsUsedCheck: { valid: true, usedSets: 2, message: 'Використані набори: 2' },
-          setChecks: []
-        };
-      };
+      const endTime = performance.now();
+      return ((endTime - startTime) / iterations).toFixed(3); // Середній час у мс
+    }
+    
+    // Функція для додавання кнопки "Показати повністю"
+    function createShowButton(password, resultElement) {
+      const showBtn = document.createElement('button');
+      showBtn.textContent = 'Показати повністю';
+      showBtn.className = 'show-password-btn';
       
-      // Обробник кліку на кнопку тестування
-      generateBtn.addEventListener('click', function() {
-        console.log('Кнопка тестування натиснута');
+      showBtn.addEventListener('click', function() {
+        const passwordText = document.createElement('div');
+        passwordText.innerHTML = `<pre style="white-space: pre-wrap; word-break: break-all;">${password}</pre>`;
         
-        // Очищуємо попередні результати
-        resultsLog.innerHTML = '';
-        timeDisplay.textContent = 'Виконуються тести...';
-        
-        // Розміри паролів для тестування
-        const lengthsToTest = [8, 16, 32, 64, 128, 256, 512, 1024];
-        
-        // Функція для валідації пароля (використовуємо доступну або спрощену)
-        const validator = (typeof validatePassword === 'function' && typeof variants !== 'undefined' && typeof charSets !== 'undefined') 
-          ? function(pwd) { return validatePassword(pwd, variants.variant1, charSets); }
-          : simpleValidator;
-        
-        // Для уникнення блокування інтерфейсу, запускаємо тести асинхронно
-        setTimeout(function runTests() {
-          try {
-            console.log('Починаємо тестування...');
-            
-            // Тестуємо паролі різної довжини
-            lengthsToTest.forEach(length => {
-              const password = generatePassword(length);
-              
-              // Вимірюємо час виконання
-              const startTime = performance.now();
-              const result = validator(password);
-              const endTime = performance.now();
-              
-              const elapsedTimeMs = endTime - startTime;
-              console.log(`Пароль довжиною ${length}: ${elapsedTimeMs.toFixed(3)} мс`);
-              
-              // Додаємо результат до логу
-              addResultToLog(length, elapsedTimeMs);
-            });
-            
-            // Тестуємо дуже довгий пароль
-            timeDisplay.textContent = 'Тестування дуже довгого пароля...';
-            setTimeout(function() {
-              try {
-                const longPasswordLength = 10000;
-                const longPassword = generatePassword(longPasswordLength);
-                
-                const startLongTime = performance.now();
-                const longResult = validator(longPassword);
-                const endLongTime = performance.now();
-                
-                const longElapsedTimeMs = endLongTime - startLongTime;
-                console.log(`Довгий пароль (${longPasswordLength}): ${longElapsedTimeMs.toFixed(3)} мс`);
-                
-                addResultToLog(longPasswordLength, longElapsedTimeMs);
-                timeDisplay.textContent = 'Всі тести успішно завершено!';
-                timeDisplay.style.color = 'green';
-              } catch (error) {
-                console.error('Помилка при тестуванні довгого пароля:', error);
-                timeDisplay.textContent = 'Помилка під час тестування. Перевірте консоль браузера.';
-                timeDisplay.style.color = 'red';
-              }
-            }, 100);
-          } catch (error) {
-            console.error('Помилка під час тестування:', error);
-            timeDisplay.textContent = 'Помилка під час тестування. Перевірте консоль браузера.';
-            timeDisplay.style.color = 'red';
-          }
-        }, 10);
+        // Замінюємо кнопку на повний текст пароля
+        showBtn.replaceWith(passwordText);
       });
       
-      console.log('Обробник події для кнопки тестування встановлено');
-    } else {
-      console.error('Не вдалося знайти необхідні елементи для тестування продуктивності');
+      return showBtn;
     }
+    
+    // Функція для тестування всіх довжин паролів
+    function runAllTests() {
+      resultsLog.innerHTML = '';
+      timeDisplay.textContent = 'Тестування всіх довжин паролів...';
+      
+      // Використовуємо setTimeout, щоб дати браузеру оновити інтерфейс
+      setTimeout(() => {
+        const results = [];
+        
+        // Тестуємо кожну довжину
+        for (const length of passwordLengths) {
+          const password = generateRandomPassword(length);
+          const time = measureValidationTime(password);
+          
+          results.push({ length, password, time });
+        }
+        
+        // Відображаємо результати
+        displayResults(results);
+        timeDisplay.textContent = 'Тестування завершено';
+      }, 50);
+    }
+    
+    // Функція для відображення результатів
+    function displayResults(results) {
+      resultsLog.innerHTML = '';
+      
+      results.forEach(result => {
+        const resultElement = document.createElement('div');
+        
+        const infoText = document.createElement('p');
+        infoText.innerHTML = `<strong>Довжина пароля:</strong> ${result.length} символів | <strong>Час виконання:</strong> ${result.time} мс`;
+        
+        const passwordContainer = document.createElement('div');
+        passwordContainer.innerHTML = `<strong>Пароль:</strong> `;
+        
+        // Додаємо маскований пароль
+        const maskedPasswordSpan = document.createElement('code');
+        maskedPasswordSpan.textContent = maskPassword(result.password);
+        passwordContainer.appendChild(maskedPasswordSpan);
+        
+        // Додаємо кнопку "Показати повністю"
+        const showBtn = createShowButton(result.password, resultElement);
+        passwordContainer.appendChild(showBtn);
+        
+        resultElement.appendChild(infoText);
+        resultElement.appendChild(passwordContainer);
+        resultsLog.appendChild(resultElement);
+      });
+    }
+    
+    // Обробник кліку на кнопку генерації
+    generateBtn.addEventListener('click', runAllTests);
   });
